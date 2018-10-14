@@ -10,7 +10,7 @@
 int main() {
 
 
-
+    selectDificultad("Bryan");
 
 
     return 0;
