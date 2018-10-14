@@ -95,3 +95,46 @@ void modificarBarraTrabajo(){
     destruirCandado(lock);
 
 }
+
+
+void iniciarMeeseeks(int dificultad){
+    // 0. Inicia(Saluda)
+    // 1. Bretea
+    // 2. Evalua
+        // 2.1. Crea nuevos Meeseeks en consecuencia
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
