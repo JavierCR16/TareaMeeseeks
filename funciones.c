@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include<string.h>
+#include <string.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <time.h>
@@ -15,9 +15,13 @@ int barraTrabajo = 0;
 int selectDificultad(char* Mensaje){
 	int dificultad; //entero que representa la dificultad
 	char difUser; // representa la desición del usuario
+
 	printf("Su respuesta: %s",Mensaje);
+
     srand(time(0));
+
     while(1){
+
 		printf("\n¿Desea seleccionar la dificultad de su tarea?(Y/N)\n Si no la establece la dificultad será aleatoria.\n\nDigite su respuesta: ");
 		scanf("%c",&difUser);
 		getchar();
@@ -26,20 +30,24 @@ int selectDificultad(char* Mensaje){
 			printf("Seleccione la dificultad.\n(100 es una tarea trivial. 0 es una tarea imposible)\n\nDigite su respuesta: ");
 			scanf("%d",&dificultad);
             getchar();
+
 			if(0<=dificultad && dificultad<=100){//validar que esté en el rango
 				printf("Se ha seleccionado %d como la dificultad de la tarea.\n", dificultad);
 			    break;
 			}
+
 			else{ // no está en el rango
 				fprintf(stderr, "Error: La dificultad ingresada es inválida.\n");
 				continue;
 			}
 		}
+
 		else if(difUser=='n'|difUser=='N'){ // Si dice que no. La dificultad va a ser aleatoria.
-			dificultad = rand()%101;
+			dificultad = rand()%101; // TODO Algoritmo Meeseeks para calcular dificultad
 			printf("La dificultad de su tarea es: %d\n",dificultad);
 			break;
 		}
+
 		else{ //No dijo nada o no fue Y/N
 			fprintf(stderr, "Respuesta inválida. Inténtelo nuevamente...\n");
 			continue;
@@ -94,4 +102,65 @@ void modificarBarraTrabajo(){
 
     destruirCandado(lock);
 
+}
+
+int calcularDuracionSolicitud(int dificultad){ //TODO Algoritmo pichudo para calcular ese tiempo
+
+    srand(time(0));
+    int duracion = ((rand()%51) + 450) / 100; //Genera un random por el momento entre 0.5 y 5 segundos
+
+    return duracion;
+
+}
+
+int trabajarSolicitud(int duracionSolicitud){
+    int tiempo = 0;
+    int termino = 0;
+    clock_t inicio = clock();
+    while (tiempo / 1000 > duracionSolicitud) {
+
+        modificarBarraTrabajo();
+        tiempo = (clock() - inicio) * 1000 / CLOCKS_PER_SEC;
+        if (barraTrabajo == 100) {
+            termino = 1;
+            break;
+        }
+
+    }
+    return termino;
+}
+
+void iniciar(int dificultad, int duracionSolicitud, int numeroMeeseeks) {
+    pid_t meeseek;
+    meeseek = fork();
+
+
+    int termino = 0;
+
+    if (meeseek > 0) {
+
+        termino = trabajarSolicitud(duracionSolicitud);
+
+        if (termino) {
+            int a = 1; //TODO Relativo a las comunicaciones
+        } else {
+
+            while (barraTrabajo != 100) {
+
+                while (meeseek > 0 && numeroMeeseeks > 0) {
+
+                    meeseek = fork();
+
+                    if (meeseek == 0) {
+                        termino = trabajarSolicitud(duracionSolicitud);
+
+                        numeroMeeseeks--;
+                    }
+                }
+
+
+            }
+
+        }
+    }
 }
