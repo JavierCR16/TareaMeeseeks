@@ -3,4 +3,4 @@ project(TareaMeeseeks C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(TareaMeeseeks main.c)
+add_executable(TareaMeeseeks main.c funciones.c)
