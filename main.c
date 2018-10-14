@@ -5,13 +5,13 @@
 #include <sys/wait.h>
 #include <stdio.h>
 #include <string.h>
+#include "funciones.c"
 
 int main() {
 
-    int nivel = 1;
-    int instancia = 1;
 
 
 
-    return 0; //fsdgdfgsfgfdginaliza
+
+    return 0;
 }
