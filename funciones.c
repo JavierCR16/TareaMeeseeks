@@ -113,6 +113,12 @@ int calcularDuracionSolicitud(int dificultad){ //TODO Algoritmo pichudo para cal
 
 }
 
+// 0. Inicia(Saluda)
+// 1. Bretea
+// 2. Evalua
+// 2.1. Crea nuevos Meeseeks en consecuencia
+
+
 int trabajarSolicitud(int duracionSolicitud){
     int tiempo = 0;
     int termino = 0;
