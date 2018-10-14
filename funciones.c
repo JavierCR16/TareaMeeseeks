@@ -6,6 +6,7 @@
 #include<string.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <time.h>
 
 int nivel = 1;
 int instancia = 1;
@@ -15,7 +16,8 @@ int selectDificultad(char* Mensaje){
 	int dificultad; //entero que representa la dificultad
 	char difUser; // representa la desición del usuario
 	printf("Su respuesta: %s",Mensaje);
-	while(1){
+    srand(time(0));
+    while(1){
 		printf("\n¿Desea seleccionar la dificultad de su tarea?(Y/N)\n Si no la establece la dificultad será aleatoria.\n\nDigite su respuesta: ");
 		scanf("%c",&difUser);
 		getchar();
