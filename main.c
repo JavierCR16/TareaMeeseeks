@@ -9,11 +9,10 @@
 
 
 void MeeseeksForks(char* instruccion){
-    selectDificultad(instruccion);
+    int dificultad = selectDificultad(instruccion);
 
     /* CREACIÓN DEL MEESEEKS PADRE */
-
-
+    iniciarMeeseeks(dificultad);
 
 }
 
@@ -24,15 +23,20 @@ void MeeseeksThreads(){
 
 
 int main() {
-    char* instruccion; // La orden que se le da al primer Mr. Meeseeks
+    char *instruccion = ""; // La orden que se le da al primer Mr. Meeseeks
+    char array[] = "";
 
     printf("Máquina de Mr. Meeeseeks.\nSeleccione la forma en la que desea crearlos:\n    a. Forks\n    b. Threads\n\n");
-    printf("Digite su Respuesta: ");
-    scanf("%s",instruccion);
+    //TODO validar la entrada de lo que desea
+
+    printf("Digite su Instrucción: ");
+    scanf("%[^\n]s", array);
+    getchar();
+    instruccion = array;
+
 
     MeeseeksForks(instruccion);
 
-    //TODO validar la entrada de lo que desea
 
     return 0;
 }

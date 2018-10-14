@@ -11,6 +11,7 @@
 int nivel = 1;
 int instancia = 1;
 int barraTrabajo = 0;
+int Gdificultad;
 
 int selectDificultad(char* Mensaje){
 	int dificultad; //entero que representa la dificultad
@@ -27,7 +28,8 @@ int selectDificultad(char* Mensaje){
 		getchar();
 
 		if(difUser=='y'|difUser=='Y'){ //Si dice que sí
-			printf("Seleccione la dificultad.\n(100 es una tarea trivial. 0 es una tarea imposible)\n\nDigite su respuesta: ");
+
+		    printf("Seleccione la dificultad.\n(100 es una tarea trivial. 0 es una tarea imposible)\n\nDigite su respuesta: ");
 			scanf("%d",&dificultad);
             getchar();
 
@@ -54,7 +56,7 @@ int selectDificultad(char* Mensaje){
 		}
 
 	}
-
+	Gdificultad = dificultad;
 	return dificultad;
 }
 
@@ -137,6 +139,8 @@ int trabajarSolicitud(int duracionSolicitud){
 }
 
 void iniciar(int dificultad, int duracionSolicitud, int numeroMeeseeks) {
+    printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%d)",getpid(),getppid(),nivel,instancia);
+
     pid_t meeseek;
     meeseek = fork();
 
@@ -170,3 +174,15 @@ void iniciar(int dificultad, int duracionSolicitud, int numeroMeeseeks) {
         }
     }
 }
+
+    int tirarDado(){
+        srand(time(0));
+        int probabilidad = rand()%101;
+
+        if (probabilidad<Gdificultad){ //entonces cumple su mini-tarea
+            return 1;
+        }
+        else{ //sino entonces no h pudo
+            return 0;
+        }
+    }
