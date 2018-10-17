@@ -12,6 +12,7 @@ int nivel = 1;
 int instancia = 1;
 int barraTrabajo = 0;
 int Gdificultad;
+sem_t lock;
 
 int selectDificultad(char* Mensaje){
 	int dificultad; //entero que representa la dificultad
@@ -61,12 +62,9 @@ int selectDificultad(char* Mensaje){
 }
 
 
-sem_t crearCandado(){
-    sem_t candado;
+void crearCandado(){
 
-    sem_init(&candado, 1,1);
-
-    return candado;
+    sem_init(&lock, 1,1);
 
 }
 
@@ -76,7 +74,6 @@ void destruirCandado(sem_t candadoADestruir){
 
 void modificarNivelInstancia(int elevarVariable){
 
-    sem_t lock = crearCandado();
 
     sem_wait(&lock);
 
@@ -88,13 +85,12 @@ void modificarNivelInstancia(int elevarVariable){
 
     sem_post(&lock);
 
-    destruirCandado(lock);
+
 
 }
 
 void modificarBarraTrabajo(){
 
-    sem_t lock = crearCandado();
 
     sem_wait(&lock);
 
@@ -106,7 +102,13 @@ void modificarBarraTrabajo(){
 
 }
 
-int calcularDuracionSolicitud(int dificultad){ //TODO Algoritmo pichudo para calcular ese tiempo
+int calcularNumeroMeeseks(){ //TODO Algoritmo que calcula cuantos meeseeks va a crear un meeseek basado en la dificultad
+
+
+    return 1;
+}
+
+int calcularDuracionSolicitud(){ //TODO Algoritmo pichudo para calcular ese tiempo
 
     srand(time(0));
     int duracion = ((rand()%51) + 450) / 100; //Genera un random por el momento entre 0.5 y 5 segundos
@@ -121,13 +123,29 @@ int calcularDuracionSolicitud(int dificultad){ //TODO Algoritmo pichudo para cal
 // 2.1. Crea nuevos Meeseeks en consecuencia
 
 
+int tirarDado(){
+    srand(time(0));
+    int probabilidad = rand()%101;
+
+    if (probabilidad<Gdificultad){ //entonces cumple su mini-tarea
+        return 1;
+    }
+    else{ //sino entonces no h pudo
+        return 0;
+    }
+}
+
 int trabajarSolicitud(int duracionSolicitud){
     int tiempo = 0;
     int termino = 0;
     clock_t inicio = clock();
     while (tiempo / 1000 > duracionSolicitud) {
 
-        modificarBarraTrabajo();
+        int exito = tirarDado();
+
+        if(exito)
+            modificarBarraTrabajo();
+
         tiempo = (clock() - inicio) * 1000 / CLOCKS_PER_SEC;
         if (barraTrabajo == 100) {
             termino = 1;
@@ -138,7 +156,12 @@ int trabajarSolicitud(int duracionSolicitud){
     return termino;
 }
 
-void iniciar(int dificultad, int duracionSolicitud, int numeroMeeseeks) {
+
+void iniciar() {
+    crearCandado();
+    int duracionSolicitud = calcularDuracionSolicitud();
+    int numeroMeeseeks = calcularNumeroMeeseks();
+
     printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%d)",getpid(),getppid(),nivel,instancia);
 
     pid_t meeseek;
@@ -147,15 +170,17 @@ void iniciar(int dificultad, int duracionSolicitud, int numeroMeeseeks) {
 
     int termino = 0;
 
+    while (barraTrabajo != 100) {
+
     if (meeseek > 0) {
 
         termino = trabajarSolicitud(duracionSolicitud);
 
         if (termino) {
-            int a = 1; //TODO Relativo a las comunicaciones
+            printf("Ya termine"); //TODO Relativo a las comunicaciones
         } else {
 
-            while (barraTrabajo != 100) {
+
 
                 while (meeseek > 0 && numeroMeeseeks > 0) {
 
@@ -164,8 +189,14 @@ void iniciar(int dificultad, int duracionSolicitud, int numeroMeeseeks) {
                     if (meeseek == 0) {
                         termino = trabajarSolicitud(duracionSolicitud);
 
-                        numeroMeeseeks--;
+                        if(termino)
+                            gdfg;
+                        else
+                            // Crear los n meeseks
+
                     }
+
+                    numeroMeeseeks--;
                 }
 
 
@@ -175,14 +206,3 @@ void iniciar(int dificultad, int duracionSolicitud, int numeroMeeseeks) {
     }
 }
 
-    int tirarDado(){
-        srand(time(0));
-        int probabilidad = rand()%101;
-
-        if (probabilidad<Gdificultad){ //entonces cumple su mini-tarea
-            return 1;
-        }
-        else{ //sino entonces no h pudo
-            return 0;
-        }
-    }

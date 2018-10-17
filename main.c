@@ -12,8 +12,6 @@ void MeeseeksForks(char* instruccion){
     int dificultad = selectDificultad(instruccion);
 
     /* CREACIÓN DEL MEESEEKS PADRE */
-    iniciarMeeseeks(dificultad);
-
 }
 
 
