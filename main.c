@@ -8,20 +8,9 @@
 #include "funciones.c"
 
 
-void MeeseeksForks(char* instruccion){
-    int dificultad = selectDificultad(instruccion);
-
-    /* CREACIÓN DEL MEESEEKS PADRE */
-}
-
-
-void MeeseeksThreads(){
-
-}
-
 
 int main() {
-    char *instruccion = ""; // La orden que se le da al primer Mr. Meeseeks
+   /* char *instruccion = ""; // La orden que se le da al primer Mr. Meeseeks
     char array[] = "";
 
     printf("Máquina de Mr. Meeeseeks.\nSeleccione la forma en la que desea crearlos:\n    a. Forks\n    b. Threads\n\n");
@@ -33,7 +22,11 @@ int main() {
     instruccion = array;
 
 
-    MeeseeksForks(instruccion);
+    MeeseeksForks(instruccion);*/
+
+    selectDificultad("Quiero un Cafe");
+    iniciar();
+   //prueba();
 
 
     return 0;

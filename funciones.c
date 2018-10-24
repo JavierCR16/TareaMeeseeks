@@ -7,20 +7,40 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <time.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <errno.h>
+
+
+struct wrapper{
+    sem_t lock;
+    sem_t lockInstancia;
+    sem_t lockSolucionador;
+    int barraTrabajo;
+    int instancia;
+    int informacionSolucionador[4]; // n,i,pid,ppid
+
+
+};
+
 
 int nivel = 1;
-int instancia = 1;
-int barraTrabajo = 0;
 int Gdificultad;
-sem_t lock;
+int largoBarra = 9000000;
 
-int selectDificultad(char* Mensaje){
+
+char *segmentoMemoria;
+struct wrapper * variablesComp;
+
+void selectDificultad(char* Mensaje){
+    srand(time(NULL));
+
 	int dificultad; //entero que representa la dificultad
 	char difUser; // representa la desición del usuario
 
 	printf("Su respuesta: %s",Mensaje);
 
-    srand(time(0));
+
 
     while(1){
 
@@ -58,151 +78,231 @@ int selectDificultad(char* Mensaje){
 
 	}
 	Gdificultad = dificultad;
-	return dificultad;
+
 }
 
 
 void crearCandado(){
 
-    sem_init(&lock, 1,1);
-
+   sem_init(&variablesComp->lock, 1,1);
+   sem_init(&variablesComp->lockInstancia,1,1);
+   sem_init(&variablesComp->lockSolucionador,1,1);
 }
 
-void destruirCandado(sem_t candadoADestruir){
-    sem_destroy(&candadoADestruir);
+void destruirCandado(sem_t *candadoADestruir){
+    sem_destroy(candadoADestruir);
 }
 
-void modificarNivelInstancia(int elevarVariable){
+int verificarSiHaySolucionador(){
 
+    if(variablesComp->informacionSolucionador[0] == 0)
+        return 0;
 
-    sem_wait(&lock);
-
-    if(elevarVariable)
-        nivel++;
-    else
-        instancia++;
-
-
-    sem_post(&lock);
-
-
+    return 1;
 
 }
 
 void modificarBarraTrabajo(){
 
 
-    sem_wait(&lock);
+    sem_wait(&variablesComp->lock);
 
-    barraTrabajo++;
+    variablesComp->barraTrabajo +=1;
 
-    sem_post(&lock);
-
-    destruirCandado(lock);
+    sem_post(&variablesComp->lock);
 
 }
 
-int calcularNumeroMeeseks(){ //TODO Algoritmo que calcula cuantos meeseeks va a crear un meeseek basado en la dificultad
+void modificarInstancia(int * instanciaPropiaProceso){
 
+    sem_wait(&variablesComp->lockInstancia);
 
-    return 1;
-}
+    variablesComp->instancia +=1;
+    *instanciaPropiaProceso = variablesComp->instancia;
 
-int calcularDuracionSolicitud(){ //TODO Algoritmo pichudo para calcular ese tiempo
-
-    srand(time(0));
-    int duracion = ((rand()%51) + 450) / 100; //Genera un random por el momento entre 0.5 y 5 segundos
-
-    return duracion;
+    sem_post(&variablesComp->lockInstancia);
 
 }
 
-// 0. Inicia(Saluda)
-// 1. Bretea
-// 2. Evalua
-// 2.1. Crea nuevos Meeseeks en consecuencia
+void modificarInformacionSolucionador(int *instanciaPropia){
+    sem_wait(&variablesComp->lockSolucionador);
 
+    if(!verificarSiHaySolucionador()) {
+
+        variablesComp->informacionSolucionador[0] = nivel;
+        variablesComp->informacionSolucionador[1] = *instanciaPropia;
+        variablesComp->informacionSolucionador[2] = (int) getpid();
+        variablesComp->informacionSolucionador[3] = (int) getppid();
+
+    }
+
+    sem_post(&variablesComp->lockSolucionador);
+}
+
+int calcularNumeroMeeseeks(){ //TODO Algoritmo que calcula cuantos meeseeks va a crear un meeseek basado en la dificultad
+
+    return 2;
+}
+
+float calcularDuracionSolicitud(){ //TODO Algoritmo pichudo para calcular ese tiempo
+
+    float duracion = ((rand()%51) + 450) / 100; //Genera un random por el momento entre 0.5 y 5 segundos
+
+    return 0.5;
+
+}
 
 int tirarDado(){
-    srand(time(0));
     int probabilidad = rand()%101;
 
-    if (probabilidad<Gdificultad){ //entonces cumple su mini-tarea
+    if (probabilidad < Gdificultad){
+
         return 1;
     }
-    else{ //sino entonces no h pudo
-        return 0;
-    }
+    return 0;
+
 }
 
-int trabajarSolicitud(int duracionSolicitud){
-    int tiempo = 0;
+int trabajarSolicitud(float duracionSolicitud){
+    double tiempo = 0;
     int termino = 0;
     clock_t inicio = clock();
-    while (tiempo / 1000 > duracionSolicitud) {
+
+    while (tiempo/1000 < duracionSolicitud) {
+
+        if (variablesComp->barraTrabajo >= largoBarra) {
+            termino = 1;
+            break;
+        }
 
         int exito = tirarDado();
 
         if(exito)
             modificarBarraTrabajo();
 
-        tiempo = (clock() - inicio) * 1000 / CLOCKS_PER_SEC;
-        if (barraTrabajo == 100) {
-            termino = 1;
-            break;
-        }
+        tiempo = (double)((clock() - inicio)*1000 / CLOCKS_PER_SEC);
+
 
     }
     return termino;
 }
 
+void establecerMemoriaCompartida(){
+
+    key_t key;
+    int shmid;
+
+    key = ftok("shmfile",65);
+    shmid = shmget(key,sizeof(variablesComp),0666|IPC_CREAT);
+    segmentoMemoria = shmat(shmid, (void *)0, 0);
+    variablesComp = (struct wrapper*)segmentoMemoria;
+    variablesComp->barraTrabajo = 0;
+    variablesComp->instancia = 1;
+
+    variablesComp->informacionSolucionador[0] = 0;
+    variablesComp->informacionSolucionador[1] = 0;
+    variablesComp->informacionSolucionador[2] = 0;
+    variablesComp->informacionSolucionador[3] = 0;
+
+
+
+}
+
+void soltarMemoriaCompartida(){
+
+    shmdt(segmentoMemoria);
+
+}
+
+
 
 void iniciar() {
-    crearCandado();
-    int duracionSolicitud = calcularDuracionSolicitud();
-    int numeroMeeseeks = calcularNumeroMeeseks();
-
-    printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%d)",getpid(),getppid(),nivel,instancia);
 
     pid_t meeseek;
+    float duracionSolicitud = calcularDuracionSolicitud();
+    int numeroMeeseeks = calcularNumeroMeeseeks();
+    int numMeeseeksTemp = numeroMeeseeks;
+    int termino = 0;
+    int *instanciaPropia = malloc(sizeof(int));
+    *instanciaPropia = 1;
+
+    printf("Duracion Meeseek: %f, Numero Meeseeks: %i \n", duracionSolicitud, numeroMeeseeks);
+    establecerMemoriaCompartida();
+    crearCandado();
+
     meeseek = fork();
 
-
-    int termino = 0;
-
-    while (barraTrabajo != 100) {
-
     if (meeseek > 0) {
+        printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%i) \n", getpid(), getppid(),
+                nivel, *instanciaPropia);
 
-        termino = trabajarSolicitud(duracionSolicitud);
+    while (variablesComp ->barraTrabajo< largoBarra) {
+        sleep(5);
+        numMeeseeksTemp = numeroMeeseeks;
+        if (meeseek > 0) {
+            termino = trabajarSolicitud(duracionSolicitud);
 
-        if (termino) {
-            printf("Ya termine"); //TODO Relativo a las comunicaciones
-        } else {
+            if (termino) {
+                    modificarInformacionSolucionador(instanciaPropia);
+                    printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
+                           nivel, *instanciaPropia);
+            } else {
 
-
-
-                while (meeseek > 0 && numeroMeeseeks > 0) {
+                while (meeseek > 0 && numMeeseeksTemp > 0) {
 
                     meeseek = fork();
 
                     if (meeseek == 0) {
+
+                        nivel++;
+                        modificarInstancia(instanciaPropia);
+
+                        printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%i) \n", getpid(), getppid(),
+                               nivel, *instanciaPropia); //Aqui para que imprima bien la instancia en la que esta
                         termino = trabajarSolicitud(duracionSolicitud);
 
-                        if(termino)
-                            gdfg;
+                        if (termino) {
+                            modificarInformacionSolucionador(instanciaPropia);
+                            printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
+                                   nivel, *instanciaPropia);
+                        }
                         else
-                            // Crear los n meeseks
+                            meeseek = fork();
+                           // break;
+                        break;
 
                     }
 
-                    numeroMeeseeks--;
+                    numMeeseeksTemp--;
                 }
-
 
             }
 
         }
     }
+}
+    /*printf("nSolucionador: %i \n",variablesComp->informacionSolucionador[0]);
+    printf("iSolucionador: %i \n",variablesComp->informacionSolucionador[1]);
+    printf("pidSolucionador: %i \n",variablesComp->informacionSolucionador[2]);
+    printf("ppidSolucionador: %i \n",variablesComp->informacionSolucionador[3]);*/
+    soltarMemoriaCompartida();
+}
+
+void prueba(){
+   /* establecerMemoriaCompartida();
+    printf("variable lock is pointing at address: %p\n", (void*)segmentoMemoria);
+    printf("variable lock is pointing at address: %p\n", (void*)variablesComp);
+    printf("variable lock is pointing at address: %p\n", (void*)&(variablesComp->lock));
+    printf("variable lock is pointing at address: %p\n", (void*)&(variablesComp->barraTrabajo));
+    printf("%zu",sizeof(sem_t));
+    printf("%zu",sizeof(sem_t) + sizeof(int));
+    establecerMemoriaCompartida();
+    printf("variable lock is pointing at address: %p\n", (void*)segmentoMemoria);
+    printf("variable lock is pointing at address: %p\n", (void*)lock);
+    printf("variable barraTrabajo is pointing at address: %p\n", (void*)barraTrabajo);
+    int * caca = malloc(4);
+    *caca =1;
+
+    printf("%i",++*caca);*/
 }
 
