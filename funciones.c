@@ -163,7 +163,7 @@ int tirarDado(){
 
 }
 
-int trabajarSolicitud(float duracionSolicitud){
+int trabajarSolicitud(float duracionSolicitud, int * instanciaPropia){
     double tiempo = 0;
     int termino = 0;
     clock_t inicio = clock();
@@ -171,6 +171,7 @@ int trabajarSolicitud(float duracionSolicitud){
     while (tiempo/1000 < duracionSolicitud) {
 
         if (variablesComp->barraTrabajo >= largoBarra) {
+            modificarInformacionSolucionador(instanciaPropia);
             termino = 1;
             break;
         }
@@ -240,10 +241,9 @@ void iniciar() {
         sleep(5);
         numMeeseeksTemp = numeroMeeseeks;
         if (meeseek > 0) {
-            termino = trabajarSolicitud(duracionSolicitud);
+            termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
 
             if (termino) {
-                    modificarInformacionSolucionador(instanciaPropia);
                     printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
                            nivel, *instanciaPropia);
             } else {
@@ -259,10 +259,9 @@ void iniciar() {
 
                         printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%i) \n", getpid(), getppid(),
                                nivel, *instanciaPropia); //Aqui para que imprima bien la instancia en la que esta
-                        termino = trabajarSolicitud(duracionSolicitud);
+                        termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
 
                         if (termino) {
-                            modificarInformacionSolucionador(instanciaPropia);
                             printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
                                    nivel, *instanciaPropia);
                         }
