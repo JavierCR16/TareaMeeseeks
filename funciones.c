@@ -41,20 +41,27 @@ int obtenerDificultadMeeseek( char* mensaje){
     return dificultad;
 }
 
-
-
 char * obtenerTarea(){
     char* mensaje = malloc(sizeof(char)*10000);
 
-    printf("Escriba su tarea: ");
+    printf("Escriba su tarea: \n");
     scanf("%[^\n]s", mensaje);
     getchar();
 
-    printf("Su respuesta: %s",mensaje);
+    printf("Su respuesta: %s\n",mensaje);
 
     return mensaje;
 }
 
+void actualizarBarraTrabajo(){
+
+    int primerDigito = Gdificultad / 10;
+
+    double aumentoBarraTrabajo = ((10-primerDigito) * 1.5);
+
+    largoBarraTrabajo= (int)aumentoBarraTrabajo * largoBarraTrabajo;
+
+}
 
 void selectDificultad(char *mensaje){
     srand(time(NULL));
@@ -98,6 +105,7 @@ void selectDificultad(char *mensaje){
 
 	}
 	Gdificultad = dificultad;
+    actualizarBarraTrabajo();
 
 }
 
@@ -106,10 +114,6 @@ void crearCandado(){
    sem_init(&variablesComp->lock, 1,1);
    sem_init(&variablesComp->lockInstancia,1,1);
    sem_init(&variablesComp->lockSolucionador,1,1);
-}
-
-void destruirCandado(sem_t *candadoADestruir){
-    sem_destroy(candadoADestruir);
 }
 
 int verificarSiHaySolucionador(){
@@ -273,7 +277,8 @@ void iniciar(char * tarea) {
     int *instanciaPropia = malloc(sizeof(int));
     *instanciaPropia = 1;
 
-   // printf("Duracion Meeseek: %f, Numero Meeseeks: %i \n", duracionSolicitud, numeroMeeseeks);
+    printf("Duracion de Ejecucion del Meeseek: %f, Numero de Meeseeks a Generar por Meeseek: %i \n", duracionSolicitud, numeroMeeseeks);
+
     establecerMemoriaCompartida();
     crearCandado();
 
@@ -284,7 +289,6 @@ void iniciar(char * tarea) {
                 nivel, *instanciaPropia);
 
     while (variablesComp ->barraTrabajo< largoBarraTrabajo) {
-        sleep(1);
         numMeeseeksTemp = numeroMeeseeks;
         if (meeseek > 0) {
             termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
@@ -299,8 +303,9 @@ void iniciar(char * tarea) {
 
                     meeseek = fork();
                     
-                    if(meeseek>0)
+                    if(meeseek>0) {
                         setMensajeEnTuberia(tarea);
+                    }
 
                     if (meeseek == 0) {
 
