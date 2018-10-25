@@ -26,7 +26,7 @@ struct wrapper{
 
 int nivel = 1;
 int Gdificultad;
-int largoBarra = 9000000;
+int largoBarraTrabajo = 9000000;
 int fd [2];
 
 char *segmentoMemoria;
@@ -162,11 +162,12 @@ int calcularNumeroMeeseeks(){ //TODO Algoritmo que calcula cuantos meeseeks va a
     return 2;
 }
 
-float calcularDuracionSolicitud(){ //TODO Algoritmo pichudo para calcular ese tiempo
-    float duracion = (rand()%450);
-            //+ 50) / 100; //Genera un random por el momento entre 0.5 y 5 segundos
-    printf("%f \n",duracion);
-    return 0.5;
+float calcularDuracionSolicitud(){
+    float duracion = rand()% (500 + 1 - 50) + 50;
+
+    duracion = duracion/100;
+
+    return duracion;
 
 }
 
@@ -188,7 +189,7 @@ int trabajarSolicitud(float duracionSolicitud, int * instanciaPropia){
 
     while (tiempo/1000 < duracionSolicitud) {
 
-        if (variablesComp->barraTrabajo >= largoBarra) {
+        if (variablesComp->barraTrabajo >= largoBarraTrabajo) {
             modificarInformacionSolucionador(instanciaPropia);
             termino = 1;
             break;
@@ -272,7 +273,7 @@ void iniciar(char * tarea) {
     int *instanciaPropia = malloc(sizeof(int));
     *instanciaPropia = 1;
 
-    printf("Duracion Meeseek: %f, Numero Meeseeks: %i \n", duracionSolicitud, numeroMeeseeks);
+   // printf("Duracion Meeseek: %f, Numero Meeseeks: %i \n", duracionSolicitud, numeroMeeseeks);
     establecerMemoriaCompartida();
     crearCandado();
 
@@ -282,8 +283,8 @@ void iniciar(char * tarea) {
         printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%i) \n", getpid(), getppid(),
                 nivel, *instanciaPropia);
 
-    while (variablesComp ->barraTrabajo< largoBarra) {
-        sleep(2);
+    while (variablesComp ->barraTrabajo< largoBarraTrabajo) {
+        sleep(1);
         numMeeseeksTemp = numeroMeeseeks;
         if (meeseek > 0) {
             termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
@@ -297,8 +298,7 @@ void iniciar(char * tarea) {
                     pipe(fd);
 
                     meeseek = fork();
-
-
+                    
                     if(meeseek>0)
                         setMensajeEnTuberia(tarea);
 
