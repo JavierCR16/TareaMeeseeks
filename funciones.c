@@ -26,21 +26,30 @@ struct wrapper{
 
 int nivel = 1;
 int Gdificultad;
-int largoBarra = 90000000;
+int largoBarra = 9000000;
 int fd [2];
 
 char *segmentoMemoria;
 struct wrapper * variablesComp;
 
-void selectDificultad(char* Mensaje){
+int obtenerDificultadMeeseek( char mensaje[]){
+    return 1;
+}
+
+void selectDificultad(){
     srand(time(NULL));
 
-	int dificultad; //entero que representa la dificultad
-	char difUser; // representa la desición del usuario
+    char mensaje[10000];
+    int dificultad; //entero que representa la dificultad
+    char difUser; // representa la desición del usuario
 
-	printf("Su respuesta: %s",Mensaje);
+
+    printf("Escriba su tarea: ");
+    scanf("%[^\n]s", mensaje);
+    getchar();
 
 
+	printf("Su respuesta: %s",mensaje);
 
     while(1){
 
@@ -66,7 +75,7 @@ void selectDificultad(char* Mensaje){
 		}
 
 		else if(difUser=='n'|difUser=='N'){ // Si dice que no. La dificultad va a ser aleatoria.
-			dificultad = rand()%101; // TODO Algoritmo Meeseeks para calcular dificultad
+			dificultad = obtenerDificultadMeeseek(mensaje);
 			printf("La dificultad de su tarea es: %d\n",dificultad);
 			break;
 		}
@@ -80,7 +89,6 @@ void selectDificultad(char* Mensaje){
 	Gdificultad = dificultad;
 
 }
-
 
 void crearCandado(){
 
@@ -145,9 +153,8 @@ int calcularNumeroMeeseeks(){ //TODO Algoritmo que calcula cuantos meeseeks va a
 }
 
 float calcularDuracionSolicitud(){ //TODO Algoritmo pichudo para calcular ese tiempo
-    float duracion = (rand()%51);
-            //+ 450) / 100; //Genera un random por el momento entre 0.5 y 5 segundos
-    sleep(2);
+    float duracion = (rand()%450);
+            //+ 50) / 100; //Genera un random por el momento entre 0.5 y 5 segundos
     printf("%f \n",duracion);
     return 0.5;
 
@@ -234,8 +241,6 @@ void recibirMensajeDeTuberia(){
     close(fd[1]);
 
     read(fd[0], buffer, sizeof(buffer));
-
-    printf("Mensaje Recibido: %s de %i \n",buffer,getppid());
 }
 
 void imprimirInformacionSolucionador(){
@@ -251,6 +256,8 @@ void iniciar(char * tarea) {
     int numeroMeeseeks = calcularNumeroMeeseeks();
     int numMeeseeksTemp = numeroMeeseeks;
     int termino = 0;
+    int meeseekOriginal = 0;
+
 
     int *instanciaPropia = malloc(sizeof(int));
     *instanciaPropia = 1;
@@ -302,7 +309,6 @@ void iniciar(char * tarea) {
                         }
                         else
                             meeseek = fork();
-                           // break;
                         break;
 
                     }
@@ -314,18 +320,92 @@ void iniciar(char * tarea) {
 
         }
     }
-
     variablesComp->instanciasFinalizadas+=1;
 
     if(variablesComp->instanciasFinalizadas == variablesComp->instancia)
         imprimirInformacionSolucionador();
+
 }
-    /*printf("nSolucionador: %i \n",variablesComp->informacionSolucionador[0]);
-    printf("iSolucionador: %i \n",variablesComp->informacionSolucionador[1]);
-    printf("pidSolucionador: %i \n",variablesComp->informacionSolucionador[2]);
-    printf("ppidSolucionador: %i \n",variablesComp->informacionSolucionador[3]);*/
     soltarMemoriaCompartida();
 }
+
+void iniciarImposible(char * tarea){
+
+    pid_t meeseek;
+    double tiempo = 0;
+    clock_t inicio = clock();
+    int duracionMaxima = 3; //5 minutos en Segundos para el caso imposible
+    float duracionSolicitud = 0;
+    int numeroMeeseeks = calcularNumeroMeeseeks();
+    int numMeeseeksTemp = numeroMeeseeks;
+    int termino = 0;
+
+    int *instanciaPropia = malloc(sizeof(int));
+    *instanciaPropia = 1;
+
+    establecerMemoriaCompartida();
+    crearCandado();
+
+    meeseek = fork();
+
+    if (meeseek > 0) {
+        printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%i) \n", getpid(), getppid(),
+               nivel, *instanciaPropia);
+
+        while (tiempo/1000 < duracionMaxima) {
+
+            numMeeseeksTemp = numeroMeeseeks;
+            if (meeseek > 0) {
+                termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
+
+                if (termino) {
+                    printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
+                           nivel, *instanciaPropia);
+                } else {
+
+                    while (meeseek > 0 && numMeeseeksTemp > 0) {
+                        pipe(fd);
+
+                        meeseek = fork();
+
+
+                        if(meeseek>0)
+                            setMensajeEnTuberia(tarea);
+
+                        if (meeseek == 0) {
+
+                            recibirMensajeDeTuberia();
+
+                            nivel++;
+                            modificarInstancia(instanciaPropia);
+
+                            printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%i) \n", getpid(), getppid(),
+                                   nivel, *instanciaPropia); //Aqui para que imprima bien la instancia en la que esta
+                            termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
+
+                            if (termino) {
+                                printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
+                                       nivel, *instanciaPropia);
+                            }
+                            else
+                                meeseek = fork();
+                            break;
+
+                        }
+
+                        numMeeseeksTemp--;
+                    }
+
+                }
+
+            }
+            tiempo = (double)((clock() - inicio)*1000 / CLOCKS_PER_SEC);
+        }
+
+    }
+    soltarMemoriaCompartida();
+} //FIXME No se detiene
+
 
 void prueba(){
    /* establecerMemoriaCompartida();
