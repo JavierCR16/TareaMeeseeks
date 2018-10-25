@@ -414,7 +414,7 @@ void iniciarImposible(char * tarea){
 
     }
     soltarMemoriaCompartida();
-} //FIXME No se detiene
+} //FIXME No se detiene despues de 5 minutos
 
 
 void prueba(){
