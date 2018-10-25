@@ -32,24 +32,35 @@ int fd [2];
 char *segmentoMemoria;
 struct wrapper * variablesComp;
 
-int obtenerDificultadMeeseek( char mensaje[]){
-    return 1;
+int obtenerDificultadMeeseek( char* mensaje){
+
+    int largoMensaje = strlen(mensaje);
+
+    int dificultad = 100 - (largoMensaje % 100);
+
+    return dificultad;
 }
 
-void selectDificultad(){
-    srand(time(NULL));
 
-    char mensaje[10000];
-    int dificultad; //entero que representa la dificultad
-    char difUser; // representa la desición del usuario
 
+char * obtenerTarea(){
+    char* mensaje = malloc(sizeof(char)*10000);
 
     printf("Escriba su tarea: ");
     scanf("%[^\n]s", mensaje);
     getchar();
 
+    printf("Su respuesta: %s",mensaje);
 
-	printf("Su respuesta: %s",mensaje);
+    return mensaje;
+}
+
+
+void selectDificultad(char *mensaje){
+    srand(time(NULL));
+
+    int dificultad; //entero que representa la dificultad
+    char difUser; // representa la desición del usuario
 
     while(1){
 
@@ -105,7 +116,6 @@ int verificarSiHaySolucionador(){
 
     if(variablesComp->informacionSolucionador[0] == 0)
         return 0;
-
     return 1;
 
 }
@@ -320,7 +330,7 @@ void iniciar(char * tarea) {
 
         }
     }
-    variablesComp->instanciasFinalizadas+=1;
+    variablesComp->instanciasFinalizadas+=1; //FIXME para que lo imprima de ultimo
 
     if(variablesComp->instanciasFinalizadas == variablesComp->instancia)
         imprimirInformacionSolucionador();
