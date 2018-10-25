@@ -1,35 +1,55 @@
-//
-// Created by javier on 10/17/18.
-//
 #include <pthread.h>
+#include <stdio.h>
 
+/* this function is run by the second thread */
+void *inc_x(void *x_void_ptr)
+{
 
-void *PrintHello(void *threadid) {
-    long tid;
-    tid = (long)threadid;
-    printf("Hello World! It's me, thread #%ld!\n", tid);
-    pthread_exit(NULL); /*  ELIMINA EL THREAD  */
+/* increment x to 100 */
+    int *x_ptr = (int *)x_void_ptr;
+    while(++(*x_ptr) < 100);
+
+    printf("x increment finished\n");
+
+/* the function must return something - NULL will do */
+    return NULL;
+
 }
 
-int iniciarThread (int argc, char *argv[]) {
-    pthread_t threads[NUM_THREADS];  /*  CREA LA CANTIDAD DE HILOS  */
-    int rc;
-    long t;
-    for(t=0; t<NUM_THREADS; t++){
-        printf("In main: creating thread %ld\n", t);
-        rc = pthread_create(&threads[t], NULL, PrintHello, (void *)t);
-        if (rc){
-            printf("ERROR; return code from pthread_create() is %d\n", rc);
-            exit(-1);
-        }
+int mainthraed()
+{
+
+    int x = 0, y = 0;
+
+/* show the initial values of x and y */
+    printf("x: %d, y: %d\n", x, y);
+
+/* this variable is our reference to the second thread */
+    pthread_t inc_x_thread;
+
+/* create a second thread which executes inc_x(&x) */
+    if(pthread_create(&inc_x_thread, NULL, inc_x, &x)) {
+
+        fprintf(stderr, "Error creating thread\n");
+        return 1;
+
+    }
+/* increment y to 100 in the first thread */
+    while(++y < 100);
+
+    printf("y increment finished\n");
+
+/* wait for the second thread to finish */
+    if(pthread_join(inc_x_thread, NULL)) {
+
+        fprintf(stderr, "Error joining thread\n");
+        return 2;
+
     }
 
-    /* Last thing that main() should do */
-    pthread_exit(NULL);
+/* show the results - x is now 100 thanks to the second thread */
+    printf("x: %d, y: %d\n", x, y);
+
+    return 0;
+
 }
-
-
-
-
-//pthread_getthreadid_np() = ESTA ES LA FUNCION PARA EL ID
-//pid()
