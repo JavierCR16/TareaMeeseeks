@@ -29,7 +29,7 @@ int main() {
 
         case '2':
             /* THREAD */
-            mainthraed(); // TODO iniciar bien lo de threads
+            mainthread(); // TODO iniciar bien lo de threads
             printf("\n");
             break;
         case '3':
