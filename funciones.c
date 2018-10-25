@@ -19,15 +19,15 @@ struct wrapper{
     int barraTrabajo;
     int instancia;
     int informacionSolucionador[4]; // n,i,pid,ppid
+    int instanciasFinalizadas;
 
 
-};
-
+}; //Variables en Memoria Compartida
 
 int nivel = 1;
 int Gdificultad;
-int largoBarra = 9000000;
-
+int largoBarra = 90000000;
+int fd [2];
 
 char *segmentoMemoria;
 struct wrapper * variablesComp;
@@ -145,9 +145,10 @@ int calcularNumeroMeeseeks(){ //TODO Algoritmo que calcula cuantos meeseeks va a
 }
 
 float calcularDuracionSolicitud(){ //TODO Algoritmo pichudo para calcular ese tiempo
-
-    float duracion = ((rand()%51) + 450) / 100; //Genera un random por el momento entre 0.5 y 5 segundos
-
+    float duracion = (rand()%51);
+            //+ 450) / 100; //Genera un random por el momento entre 0.5 y 5 segundos
+    sleep(2);
+    printf("%f \n",duracion);
     return 0.5;
 
 }
@@ -205,6 +206,8 @@ void establecerMemoriaCompartida(){
     variablesComp->informacionSolucionador[2] = 0;
     variablesComp->informacionSolucionador[3] = 0;
 
+    variablesComp->instanciasFinalizadas = 0;
+
 
 
 }
@@ -215,15 +218,40 @@ void soltarMemoriaCompartida(){
 
 }
 
+void setMensajeEnTuberia(char* tarea){
 
+    close(fd[0]);
+    write(fd[1], tarea, sizeof(tarea));
 
-void iniciar() {
+    close(fd[1]);
+
+}
+
+void recibirMensajeDeTuberia(){
+
+    char buffer[80];
+
+    close(fd[1]);
+
+    read(fd[0], buffer, sizeof(buffer));
+
+    printf("Mensaje Recibido: %s de %i \n",buffer,getppid());
+}
+
+void imprimirInformacionSolucionador(){
+    printf("Mr Meeseek Solucionador, Nivel: %i, Instancia: %i, PID: %i, PPID: %i \n", variablesComp->informacionSolucionador[0],
+            variablesComp->informacionSolucionador[1],variablesComp->informacionSolucionador[2],
+            variablesComp->informacionSolucionador[3]);
+}
+
+void iniciar(char * tarea) {
 
     pid_t meeseek;
     float duracionSolicitud = calcularDuracionSolicitud();
     int numeroMeeseeks = calcularNumeroMeeseeks();
     int numMeeseeksTemp = numeroMeeseeks;
     int termino = 0;
+
     int *instanciaPropia = malloc(sizeof(int));
     *instanciaPropia = 1;
 
@@ -238,7 +266,7 @@ void iniciar() {
                 nivel, *instanciaPropia);
 
     while (variablesComp ->barraTrabajo< largoBarra) {
-        sleep(5);
+        sleep(2);
         numMeeseeksTemp = numeroMeeseeks;
         if (meeseek > 0) {
             termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
@@ -249,10 +277,17 @@ void iniciar() {
             } else {
 
                 while (meeseek > 0 && numMeeseeksTemp > 0) {
+                    pipe(fd);
 
                     meeseek = fork();
 
+
+                    if(meeseek>0)
+                        setMensajeEnTuberia(tarea);
+
                     if (meeseek == 0) {
+
+                        recibirMensajeDeTuberia();
 
                         nivel++;
                         modificarInstancia(instanciaPropia);
@@ -279,6 +314,11 @@ void iniciar() {
 
         }
     }
+
+    variablesComp->instanciasFinalizadas+=1;
+
+    if(variablesComp->instanciasFinalizadas == variablesComp->instancia)
+        imprimirInformacionSolucionador();
 }
     /*printf("nSolucionador: %i \n",variablesComp->informacionSolucionador[0]);
     printf("iSolucionador: %i \n",variablesComp->informacionSolucionador[1]);

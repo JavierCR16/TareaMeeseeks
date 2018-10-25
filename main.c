@@ -25,7 +25,10 @@ int main() {
     MeeseeksForks(instruccion);*/
 
     selectDificultad("Quiero un Cafe");
-    iniciar();
+    iniciar("Holangas");
+    //while(1) {
+     //   calcularDuracionSolicitud();
+   // }
    //prueba();
 
 
