@@ -5,7 +5,7 @@
 #include <sys/wait.h>
 #include <stdio.h>
 #include <string.h>
-#include "funciones.c"
+//#include "funciones.c"
 #include "threads.c"
 
 
@@ -23,7 +23,7 @@ int main() {
             /* FORKS */
             mensaje = obtenerTarea();
             selectDificultad(mensaje);
-            iniciar(mensaje);
+            //iniciar(mensaje);
             printf("\n");
             break;
 

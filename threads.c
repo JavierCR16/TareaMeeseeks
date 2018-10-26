@@ -41,43 +41,19 @@ void *inc_x(void *x_void_ptr)
 
 }
 
-int mainthread()
-{
+void * pruebaFuncion( void* contador){
 
-    int x = 0, y = 0;
+    while(1) {
+        sleep(2);
 
-/* show the initial values of x and y */
-    printf("x: %d, y: %d\n", x, y);
-
-/* this variable is our reference to the second thread */
-    pthread_t inc_x_thread;
-
-/* create a second thread which executes inc_x(&x) */
-    if(pthread_create(&inc_x_thread, NULL, inc_x, &x)) {
-
-        fprintf(stderr, "Error creating thread\n");
-        return 1;
-
+        sem_wait(&lock);
+        nivel++;
+        printf("Thread Nivel: %i , TID: %i \n", nivel, (int) pthread_self());
+        sem_post(&lock);
     }
-/* increment y to 100 in the first thread */
-    while(++y < 100);
-
-    printf("y increment finished\n");
-
-/* wait for the second thread to finish */
-    if(pthread_join(inc_x_thread, NULL)) {
-
-        fprintf(stderr, "Error joining thread\n");
-        return 2;
-
-    }
-
-/* show the results - x is now 100 thanks to the second thread */
-    printf("x: %d, y: %d\n", x, y);
-
-    return 0;
 
 }
+
 
 int obtenerDificultadMeeseek( char* mensaje){
 
@@ -258,6 +234,20 @@ int trabajarSolicitud(float duracionSolicitud, int * instanciaPropia){
     return termino;
 }
 
+int mainthread()
+{
+    crearCandado();
+    pthread_t varThread;
+    int contador = 0;
+    while(contador < 100) {
+        pthread_create(&varThread, NULL, pruebaFuncion,(void *)&contador);
+        contador++;
+    }
+    pthread_exit(NULL);
+    return 0;
+
+}
+
 /*void establecerMemoriaCompartida(){
 
     key_t key;
@@ -305,7 +295,7 @@ int trabajarSolicitud(float duracionSolicitud, int * instanciaPropia){
     read(fd[0], buffer, sizeof(buffer));
 }*/
 
-void imprimirInformacionSolucionador(){
+/*void imprimirInformacionSolucionador(){
     printf("Mr Meeseek Solucionador, Nivel: %i, Instancia: %i, TID: %i, PID: %i \n", informacionSolucionador[0],
            informacionSolucionador[1],informacionSolucionador[2],
            informacionSolucionador[3]);
@@ -387,7 +377,7 @@ void iniciar(char * tarea) {
         if(instanciasFinalizadas == instancia)
             imprimirInformacionSolucionador();
     }
-}
+}*/
 
 /*void iniciarImposible(char * tarea){
 
