@@ -24,36 +24,17 @@ int nivel = 1;
 int Gdificultad;
 int largoBarraTrabajo = 9000000;
 int fd [2];
+int contadorMeeseeks;
 
 
-/* this function is run by the second thread */
-void *inc_x(void *x_void_ptr)
-{
-
-/* increment x to 100 */
-    int *x_ptr = (int *)x_void_ptr;
-    while(++(*x_ptr) < 100);
-
-    printf("x increment finished\n");
-
-/* the function must return something - NULL will do */
-    return NULL;
-
-}
-
-void * pruebaFuncion( void* contador){
-
-    while(1) {
-        sleep(2);
-
-        sem_wait(&lock);
-        nivel++;
-        printf("Thread Nivel: %i , TID: %i \n", nivel, (int) pthread_self());
-        sem_post(&lock);
-    }
-
-}
-
+/* PARA MANEJAR LOS HILOS */
+int* lista; /* LI */
+int tamano; /* CONTADOR DEL TAMAÑO DE LA LISTA */
+int meeseeksGanador;
+int termino;
+int numeroMeeseeks;
+int *instanciaPropia;
+float duracionSolicitud;
 
 int obtenerDificultadMeeseek( char* mensaje){
 
@@ -63,6 +44,7 @@ int obtenerDificultadMeeseek( char* mensaje){
 
     return dificultad;
 }
+
 
 char * obtenerTarea(){
     char* mensaje = malloc(sizeof(char)*10000);
@@ -234,20 +216,6 @@ int trabajarSolicitud(float duracionSolicitud, int * instanciaPropia){
     return termino;
 }
 
-int mainthread()
-{
-    crearCandado();
-    pthread_t varThread;
-    int contador = 0;
-    while(contador < 100) {
-        pthread_create(&varThread, NULL, pruebaFuncion,(void *)&contador);
-        contador++;
-    }
-    pthread_exit(NULL);
-    return 0;
-
-}
-
 /*void establecerMemoriaCompartida(){
 
     key_t key;
@@ -300,18 +268,118 @@ int mainthread()
            informacionSolucionador[1],informacionSolucionador[2],
            informacionSolucionador[3]);
 }
+*/
 
-void iniciar(char * tarea) {
 
-    pid_t meeseek;
-    float duracionSolicitud = calcularDuracionSolicitud();
-    int numeroMeeseeks = calcularNumeroMeeseeks();
+/* this function is run by the second thread */
+void *inc_x(void *x_void_ptr)
+{
+
+/* increment x to 100 */
+    int *x_ptr = (int *)x_void_ptr;
+    while(++(*x_ptr) < 100);
+
+    printf("x increment finished\n");
+
+/* the function must return something - NULL will do */
+    return NULL;
+
+}
+
+void * pruebaFuncion( void* contador){
+
+    while(1) {
+        sleep(2);
+
+        sem_wait(&lock);
+        nivel++;
+        printf("Thread Nivel: %i , TID: %i \n", nivel, (int) pthread_self());
+        sem_post(&lock);
+    }
+
+}
+
+int mainthread()
+{
+    crearCandado();
+    pthread_t varThread;
+    int contador = 0;
+    while(contador < 100) {
+        pthread_create(&varThread, NULL, pruebaFuncion,(void *)&contador);
+        contador++;
+    }
+    pthread_exit(NULL);
+    return 0;
+
+}
+
+void insertarEnLista (int elem){
+
+    int* tmp = (int*)malloc((tamano-1)*sizeof(int));
+    tmp = lista;
+
+    lista = (int*)malloc(tamano*sizeof(int));
+
+    for(int e=0; e<tamano; e++){
+        lista[e] = tmp[e];
+    }
+    lista[tamano] = elem;
+
+    tamano++;
+}
+
+void threadToDo(){
+
+        printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, i:%d) \n", (int)pthread_self(), getpid(), nivel);
+
+        while (barraTrabajo< largoBarraTrabajo & termino!=1) { // mientras no se haya completado la barra de trabajo
+                int numMeeseeksTemp = numeroMeeseeks;
+
+                if (trabajarSolicitud(duracionSolicitud,instanciaPropia)==1){
+                    meeseeksGanador = pthread_self();
+                    termino = 1;
+                    continue;
+
+                } else { // sino, entonces se procede a crear nuevos meeseeks
+
+                    pthread_t varThread;
+                    contadorMeeseeks++;
+                    pthread_create(&varThread, NULL, threadToDo,NULL);
+
+                }
+
+        }
+
+
+        printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! This was the Meeseeks that could do it: %d", meeseeksGanador);
+
+        exit(EXIT_SUCCESS);
+
+}
+
+
+void iniciarThread(char * tarea) {
+
+    duracionSolicitud = calcularDuracionSolicitud();
+
+
+    /* INICIAR LA LISTA Y UNA VARIABLE GLOBAL DE TAMAÑO */
+    tamano = 0;
+    lista = (int*)malloc(tamano*sizeof(int));
+
+    pthread_t varThread;
+    numeroMeeseeks = calcularNumeroMeeseeks();
     int numMeeseeksTemp = numeroMeeseeks;
-    int termino = 0;
+    termino = 0;
     int meeseekOriginal = 0;
+    contadorMeeseeks = 0; // es un contador
 
+    int esp[1]; //es un contador que se modifica con el contadorMeeseeks. La idea es que funcione para "if meeseeks == 0"
+    esp[0] = 0;
 
-    int *instanciaPropia = malloc(sizeof(int));
+    esp[1] = 1;
+
+    *instanciaPropia = malloc(sizeof(int));
     *instanciaPropia = 1;
 
     printf("Duracion de Ejecucion del Meeseek: %f, Numero de Meeseeks a Generar por Meeseek: %i \n", duracionSolicitud, numeroMeeseeks);
@@ -319,65 +387,16 @@ void iniciar(char * tarea) {
 
     crearCandado();
 
-    meeseek = fork();
+    pthread_create(&varThread, NULL, threadToDo,(void *)contadorMeeseeks);
+    insertarEnLista(contadorMeeseeks);
+    contadorMeeseeks++;
 
-    if (meeseek > 0) {
-        printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%i) \n", getpid(), getppid(),
-               nivel, *instanciaPropia);
 
-        while (barraTrabajo< largoBarraTrabajo) {
-            numMeeseeksTemp = numeroMeeseeks;
-            if (meeseek > 0) {
-                termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
 
-                if (termino) {
-                    printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
-                           nivel, *instanciaPropia);
-                } else {
+}
 
-                    while (meeseek > 0 && numMeeseeksTemp > 0) {
-                        pipe(fd);
 
-                        meeseek = fork();
 
-                        if(meeseek>0) {
-                            setMensajeEnTuberia(tarea);
-                        }
-
-                        if (meeseek == 0) {
-
-                            recibirMensajeDeTuberia();
-
-                            nivel++;
-                            modificarInstancia(instanciaPropia);
-
-                            printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%i) \n", getpid(), getppid(),
-                                   nivel, *instanciaPropia); //Aqui para que imprima bien la instancia en la que esta
-                            termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
-
-                            if (termino) {
-                                printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
-                                       nivel, *instanciaPropia);
-                            }
-                            else
-                                meeseek = fork();
-                            break;
-
-                        }
-
-                        numMeeseeksTemp--;
-                    }
-
-                }
-
-            }
-        }
-        instanciasFinalizadas+=1; //FIXME para que lo imprima de ultimo
-
-        if(instanciasFinalizadas == instancia)
-            imprimirInformacionSolucionador();
-    }
-}*/
 
 /*void iniciarImposible(char * tarea){
 

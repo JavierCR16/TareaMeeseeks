@@ -15,7 +15,7 @@ int main() {
     char n;
     char* mensaje;
 
-    printf("Caja de Mr. Meeeseeks.\nSeleccione la forma en la que desea crearlos:\n    1. Forks\n    2. Threads\n    3. Salir\n\nDigite su respuesta: \n");
+    printf("Caja de Mr. Meeeseeks.\nSeleccione la forma en la que desea crearlos:\n    1. Forks\n    2. Threads\n    3. Salir\n\nDigite su respuesta: ");
     scanf("%c", &n);
     getchar();
     switch (n){
@@ -29,7 +29,7 @@ int main() {
 
         case '2':
             /* THREAD */
-            mainthread(); // TODO iniciar bien lo de threads
+            iniciarThread(mensaje); // TODO iniciar bien lo de threads
             printf("\n");
             break;
         case '3':
