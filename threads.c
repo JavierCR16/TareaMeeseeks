@@ -379,7 +379,7 @@ void iniciarThread(char * tarea) {
 
     esp[1] = 1;
 
-    *instanciaPropia = malloc(sizeof(int));
+    instanciaPropia = malloc(sizeof(int));
     *instanciaPropia = 1;
 
     printf("Duracion de Ejecucion del Meeseek: %f, Numero de Meeseeks a Generar por Meeseek: %i \n", duracionSolicitud, numeroMeeseeks);
@@ -387,7 +387,9 @@ void iniciarThread(char * tarea) {
 
     crearCandado();
 
+    printf("antes de crear...\n");
     pthread_create(&varThread, NULL, threadToDo,(void *)contadorMeeseeks);
+    printf("luego de crear...\n");
     insertarEnLista(contadorMeeseeks);
     contadorMeeseeks++;
 
