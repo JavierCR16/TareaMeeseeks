@@ -19,9 +19,8 @@ sem_t lockSolucionador_t;
 int barraTrabajo_t;
 int instancia_t;
 int informacionSolucionador_t[2]; // TID, PID
-
 int Gdificultad_t;
-int largoBarraTrabajo_t = 5000;
+int largoBarraTrabajo_t = 3000;
 
 float duracionSolicitud;
 
@@ -202,14 +201,8 @@ void* threadToDo(){
     modificarInstancia_t();
     while(1){
         if (trabajarSolicitud_t(duracionSolicitud)==1){
-
             break;
-        } else { // sino, entonces se procede a crear nuevos meeseeks
-
-            pthread_t varThread;
-            pthread_create(&varThread, NULL, threadToDo, NULL);
         }
-
     }
     printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! \n");
 }
@@ -236,6 +229,5 @@ void iniciarThread(char * tarea) {
     }
     printf("This was the Meeseeks that Could Resolve It: TID -> %d, PID -> %d \n",
            informacionSolucionador_t[0],informacionSolucionador_t[1]);
-
 
 }
