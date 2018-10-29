@@ -20,7 +20,7 @@ int barraTrabajo_t;
 int instancia_t;
 int informacionSolucionador_t[2]; // TID, PID
 int Gdificultad_t;
-int largoBarraTrabajo_t = 3000;
+int largoBarraTrabajo_t = 2000;
 
 float duracionSolicitud;
 
@@ -209,7 +209,6 @@ void* threadToDo(){
     }
     printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! \n");
 }
-
 
 void iniciarThread(char * tarea) {
 

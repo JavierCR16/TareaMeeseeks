@@ -41,8 +41,6 @@ int obtenerDificultadMeeseek( char* mensaje){
     return dificultad;
 }
 
-
-
 char * obtenerTarea(){
     char* mensaje = malloc(sizeof(char)*10000);
 
@@ -57,11 +55,13 @@ char * obtenerTarea(){
 
 void actualizarBarraTrabajo(){
 
-    int primerDigito = Gdificultad / 10;
+    if(Gdificultad != 100) {
+        int primerDigito = Gdificultad / 10;
 
-    double aumentoBarraTrabajo = ((10-primerDigito) * 1.5);
+        double aumentoBarraTrabajo = ((10 - primerDigito) * 1.5);
 
-    largoBarraTrabajo= (int)aumentoBarraTrabajo * largoBarraTrabajo;
+        largoBarraTrabajo = (int) aumentoBarraTrabajo * largoBarraTrabajo;
+    }
 
 }
 
@@ -163,7 +163,7 @@ void modificarInformacionSolucionador(int *instanciaPropia){
     sem_post(&variablesComp->lockSolucionador);
 }
 
-int calcularNumeroMeeseeks(){ //TODO Algoritmo que calcula cuantos meeseeks va a crear un meeseek basado en la dificultad
+int calcularNumeroMeeseeks(){
     int extra = rand()% 2; // random que se fija si agrega uno más
 
     if (Gdificultad>=0 & Gdificultad<=45){ // crea 2 mr.Meeseeks de fijo y evalúa si crea otro
