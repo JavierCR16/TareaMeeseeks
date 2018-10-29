@@ -21,9 +21,8 @@ int instancia_t;
 int informacionSolucionador_t[2]; // TID, PID
 
 int Gdificultad_t;
-int largoBarraTrabajo_t = 10000;//9000000;
+int largoBarraTrabajo_t = 5000;
 
-int numeroMeeseeks;
 float duracionSolicitud;
 
 int obtenerDificultadMeeseek_t( char* mensaje){
@@ -154,11 +153,6 @@ void modificarInformacionSolucionador_t(){
     sem_post(&lockSolucionador_t);
 }
 
-int calcularNumeroMeeseeks_t(){ //TODO Algoritmo que calcula cuantos meeseeks va a crear un meeseek basado en la dificultad
-
-    return 2;
-}
-
 float calcularDuracionSolicitud_t(){
     float duracion = rand()% (500 + 1 - 50) + 50;
 
@@ -206,7 +200,6 @@ int trabajarSolicitud_t(float duracionSolicitud){
 
 void* threadToDo(){
     modificarInstancia_t();
-    //printf("Hi I'm Mr Meeseeks! Look at Meeeee! (TID: %d, PID: %d, i:%d) \n", (int)pthread_self(), getpid(), instancia);
     while(1){
         if (trabajarSolicitud_t(duracionSolicitud)==1){
 
