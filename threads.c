@@ -21,9 +21,8 @@ int instancia_t;
 int informacionSolucionador_t[2]; // TID, PID
 
 int Gdificultad_t;
-int largoBarraTrabajo_t = 9000000;
+int largoBarraTrabajo_t = 10000;//9000000;
 
-int termino;
 int numeroMeeseeks;
 float duracionSolicitud;
 
@@ -205,44 +204,32 @@ int trabajarSolicitud_t(float duracionSolicitud){
     return termino;
 }
 
-
 void* threadToDo(){
     modificarInstancia_t();
     //printf("Hi I'm Mr Meeseeks! Look at Meeeee! (TID: %d, PID: %d, i:%d) \n", (int)pthread_self(), getpid(), instancia);
     while(1){
         if (trabajarSolicitud_t(duracionSolicitud)==1){
-            termino = 1;
-            continue;
 
+            break;
         } else { // sino, entonces se procede a crear nuevos meeseeks
 
             pthread_t varThread;
             pthread_create(&varThread, NULL, threadToDo, NULL);
-
-
         }
 
-        if(termino==1){
-
-            printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! This was the Meeseeks that could do it: TID -> %d, PID -> %d",
-                    informacionSolucionador_t[0],informacionSolucionador_t[1]);
-
-            exit(EXIT_SUCCESS);
-
-        }
     }
-
+    printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! \n");
 }
 
 
 void iniciarThread(char * tarea) {
 
     duracionSolicitud = calcularDuracionSolicitud_t();
-    instancia_t = 1;
+    instancia_t = 0;
     barraTrabajo_t = 0;
     informacionSolucionador_t[0] = 0;
     informacionSolucionador_t[1] = 0;
-    termino = 0;
+
 
     pthread_t varThread;
 
@@ -250,9 +237,12 @@ void iniciarThread(char * tarea) {
 
     crearCandado_t();
 
-    printf("antes de crear...\n");
-    while (barraTrabajo_t< largoBarraTrabajo_t & termino!=1) { // mientras no se haya completado la barra de trabajo
+
+    while (barraTrabajo_t < largoBarraTrabajo_t) { // mientras no se haya completado la barra de trabajo
         pthread_create(&varThread, NULL, threadToDo,NULL);
     }
-    printf("luego de crear...\n");
+    printf("This was the Meeseeks that Could Resolve It: TID -> %d, PID -> %d \n",
+           informacionSolucionador_t[0],informacionSolucionador_t[1]);
+
+
 }
