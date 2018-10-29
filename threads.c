@@ -272,8 +272,7 @@ int trabajarSolicitud(float duracionSolicitud, int * instanciaPropia){
 
 
 /* this function is run by the second thread */
-void *inc_x(void *x_void_ptr)
-{
+void *inc_x(void *x_void_ptr){
 
 /* increment x to 100 */
     int *x_ptr = (int *)x_void_ptr;
@@ -299,8 +298,7 @@ void * pruebaFuncion( void* contador){
 
 }
 
-int mainthread()
-{
+int mainthread(){
     crearCandado();
     pthread_t varThread;
     int contador = 0;
@@ -328,32 +326,42 @@ void insertarEnLista (int elem){
     tamano++;
 }
 
-void threadToDo(){
+void* threadToDo(){
 
-        printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, i:%d) \n", (int)pthread_self(), getpid(), nivel);
+    while(1){
 
-        while (barraTrabajo< largoBarraTrabajo & termino!=1) { // mientras no se haya completado la barra de trabajo
-                int numMeeseeksTemp = numeroMeeseeks;
+        sleep(0);
 
-                if (trabajarSolicitud(duracionSolicitud,instanciaPropia)==1){
-                    meeseeksGanador = pthread_self();
-                    termino = 1;
-                    continue;
+        sem_wait(&lock);
 
-                } else { // sino, entonces se procede a crear nuevos meeseeks
+        printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, i:%d) \n", (int)pthread_self(), getpid(), contadorMeeseeks);
+        printf("meeseek: %d\n",contadorMeeseeks);
 
-                    pthread_t varThread;
-                    contadorMeeseeks++;
-                    pthread_create(&varThread, NULL, threadToDo,NULL);
+        int numMeeseeksTemp = numeroMeeseeks;
 
-                }
+        if (trabajarSolicitud(duracionSolicitud,instanciaPropia)==1){
+            meeseeksGanador = pthread_self();
+            termino = 1;
+            continue;
+
+        } else { // sino, entonces se procede a crear nuevos meeseeks
+
+            pthread_t varThread;
+            contadorMeeseeks++;
+            pthread_create(&varThread, NULL, threadToDo,(void *)&contadorMeeseeks);
 
         }
 
+        if(termino==1){
 
-        printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! This was the Meeseeks that could do it: %d", meeseeksGanador);
+            printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! This was the Meeseeks that could do it: %d", meeseeksGanador);
 
-        exit(EXIT_SUCCESS);
+            exit(EXIT_SUCCESS);
+
+        }
+        sem_post(&lock);
+
+    }
 
 }
 
@@ -384,15 +392,14 @@ void iniciarThread(char * tarea) {
 
     printf("Duracion de Ejecucion del Meeseek: %f, Numero de Meeseeks a Generar por Meeseek: %i \n", duracionSolicitud, numeroMeeseeks);
 
-
     crearCandado();
 
     printf("antes de crear...\n");
-    pthread_create(&varThread, NULL, threadToDo,(void *)contadorMeeseeks);
+    while (barraTrabajo< largoBarraTrabajo & termino!=1) { // mientras no se haya completado la barra de trabajo
+        pthread_create(&varThread, NULL, threadToDo,(void *)&contadorMeeseeks);
+    }
     printf("luego de crear...\n");
     insertarEnLista(contadorMeeseeks);
-    contadorMeeseeks++;
-
 
 
 }
