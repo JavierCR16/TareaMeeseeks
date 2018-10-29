@@ -41,6 +41,8 @@ int obtenerDificultadMeeseek( char* mensaje){
     return dificultad;
 }
 
+
+
 char * obtenerTarea(){
     char* mensaje = malloc(sizeof(char)*10000);
 
@@ -162,8 +164,17 @@ void modificarInformacionSolucionador(int *instanciaPropia){
 }
 
 int calcularNumeroMeeseeks(){ //TODO Algoritmo que calcula cuantos meeseeks va a crear un meeseek basado en la dificultad
+    int extra = rand()% 2; // random que se fija si agrega uno más
 
-    return 2;
+    if (Gdificultad>=0 & Gdificultad<=45){ // crea 2 mr.Meeseeks de fijo y evalúa si crea otro
+        return 2 + extra;
+    }
+    else if(Gdificultad>45 & Gdificultad<=85){//crea uno de fijo y evalúa si crea otro
+        return 1 + extra;
+    }
+    else{ // la tarea es muy facil, no crea ninguno nuevo
+        return 0 + extra;
+    }
 }
 
 float calcularDuracionSolicitud(){

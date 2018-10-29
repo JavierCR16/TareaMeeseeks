@@ -24,6 +24,7 @@ int largoBarraTrabajo_t = 3000;
 
 float duracionSolicitud;
 
+
 int obtenerDificultadMeeseek_t( char* mensaje){
 
     int largoMensaje = strlen(mensaje);
@@ -218,18 +219,17 @@ void iniciarThread(char * tarea) {
     informacionSolucionador_t[0] = 0;
     informacionSolucionador_t[1] = 0;
 
-
     pthread_t varThread;
 
     printf("Duracion de Ejecucion del Meeseek: %f \n", duracionSolicitud);
 
     crearCandado_t();
 
-
     while (barraTrabajo_t < largoBarraTrabajo_t) { // mientras no se haya completado la barra de trabajo
         pthread_create(&varThread, NULL, threadToDo,NULL);
     }
-    printf("This was the Meeseeks that Could Resolve It: TID -> %d, PID -> %d \n",
+
+    printf("This was the Meeseeks that could resolve it: TID -> %d, PID -> %d \n",
            informacionSolucionador_t[0],informacionSolucionador_t[1]);
 
 }
