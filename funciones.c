@@ -44,7 +44,7 @@ int obtenerDificultadMeeseek( char* mensaje){
 char * obtenerTarea(){
     char* mensaje = malloc(sizeof(char)*10000);
 
-    printf("Escriba su tarea: \n");
+    printf("Escriba su tarea: ");
     scanf("%[^\n]s", mensaje);
     getchar();
 
@@ -258,12 +258,6 @@ void recibirMensajeDeTuberia(){
     read(fd[0], buffer, sizeof(buffer));
 }
 
-void imprimirInformacionSolucionador(){
-    printf("Mr Meeseek Solucionador, Nivel: %i, Instancia: %i, PID: %i, PPID: %i \n", variablesComp->informacionSolucionador[0],
-            variablesComp->informacionSolucionador[1],variablesComp->informacionSolucionador[2],
-            variablesComp->informacionSolucionador[3]);
-}
-
 void iniciar(char * tarea) {
 
     pid_t meeseek;
@@ -294,8 +288,9 @@ void iniciar(char * tarea) {
             termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
 
             if (termino) {
-                    printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
-                           nivel, *instanciaPropia);
+                printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! This was the Meeseeks that could do it -> Nivel: %i, Instancia: %i, PID: %i, PPID: %i \n ",
+                       variablesComp->informacionSolucionador[0],  variablesComp->informacionSolucionador[1],
+                       variablesComp->informacionSolucionador[2],  variablesComp->informacionSolucionador[3]);
             } else {
 
                 while (meeseek > 0 && numMeeseeksTemp > 0) {
@@ -319,8 +314,9 @@ void iniciar(char * tarea) {
                         termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
 
                         if (termino) {
-                            printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
-                                   nivel, *instanciaPropia);
+                            printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! This was the Meeseeks that could do it -> Nivel: %i, Instancia: %i, PID: %i, PPID: %i \n ",
+                                    variablesComp->informacionSolucionador[0],  variablesComp->informacionSolucionador[1],
+                                   variablesComp->informacionSolucionador[2],  variablesComp->informacionSolucionador[3]);
                         }
                         else
                             meeseek = fork();
@@ -335,108 +331,8 @@ void iniciar(char * tarea) {
 
         }
     }
-    variablesComp->instanciasFinalizadas+=1; //FIXME para que lo imprima de ultimo
-
-    if(variablesComp->instanciasFinalizadas == variablesComp->instancia)
-        imprimirInformacionSolucionador();
-
 }
     soltarMemoriaCompartida();
 }
 
-void iniciarImposible(char * tarea){
-
-    pid_t meeseek;
-    double tiempo = 0;
-    clock_t inicio = clock();
-    int duracionMaxima = 3; //5 minutos en Segundos para el caso imposible
-    float duracionSolicitud = 0;
-    int numeroMeeseeks = calcularNumeroMeeseeks();
-    int numMeeseeksTemp = numeroMeeseeks;
-    int termino = 0;
-
-    int *instanciaPropia = malloc(sizeof(int));
-    *instanciaPropia = 1;
-
-    establecerMemoriaCompartida();
-    crearCandado();
-
-    meeseek = fork();
-
-    if (meeseek > 0) {
-        printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%i) \n", getpid(), getppid(),
-               nivel, *instanciaPropia);
-
-        while (tiempo/1000 < duracionMaxima) {
-
-            numMeeseeksTemp = numeroMeeseeks;
-            if (meeseek > 0) {
-                termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
-
-                if (termino) {
-                    printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
-                           nivel, *instanciaPropia);
-                } else {
-
-                    while (meeseek > 0 && numMeeseeksTemp > 0) {
-                        pipe(fd);
-
-                        meeseek = fork();
-
-
-                        if(meeseek>0)
-                            setMensajeEnTuberia(tarea);
-
-                        if (meeseek == 0) {
-
-                            recibirMensajeDeTuberia();
-
-                            nivel++;
-                            modificarInstancia(instanciaPropia);
-
-                            printf("Hi I'm Mr Meeseeks! Look at Meeeee! (pid: %d, ppid: %d, N: %d, i:%i) \n", getpid(), getppid(),
-                                   nivel, *instanciaPropia); //Aqui para que imprima bien la instancia en la que esta
-                            termino = trabajarSolicitud(duracionSolicitud,instanciaPropia);
-
-                            if (termino) {
-                                printf("Hi I'm Mr Meeseeks! I Finished the Job! Good Bye! %i, %i, %i, %i \n ",getpid(), getppid(),
-                                       nivel, *instanciaPropia);
-                            }
-                            else
-                                meeseek = fork();
-                            break;
-
-                        }
-
-                        numMeeseeksTemp--;
-                    }
-
-                }
-
-            }
-            tiempo = (double)((clock() - inicio)*1000 / CLOCKS_PER_SEC);
-        }
-
-    }
-    soltarMemoriaCompartida();
-} //FIXME No se detiene despues de 5 minutos
-
-
-void prueba(){
-   /* establecerMemoriaCompartida();
-    printf("variable lock is pointing at address: %p\n", (void*)segmentoMemoria);
-    printf("variable lock is pointing at address: %p\n", (void*)variablesComp);
-    printf("variable lock is pointing at address: %p\n", (void*)&(variablesComp->lock));
-    printf("variable lock is pointing at address: %p\n", (void*)&(variablesComp->barraTrabajo));
-    printf("%zu",sizeof(sem_t));
-    printf("%zu",sizeof(sem_t) + sizeof(int));
-    establecerMemoriaCompartida();
-    printf("variable lock is pointing at address: %p\n", (void*)segmentoMemoria);
-    printf("variable lock is pointing at address: %p\n", (void*)lock);
-    printf("variable barraTrabajo is pointing at address: %p\n", (void*)barraTrabajo);
-    int * caca = malloc(4);
-    *caca =1;
-
-    printf("%i",++*caca);*/
-}
 
