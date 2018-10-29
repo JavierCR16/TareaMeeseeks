@@ -29,8 +29,8 @@ int main() {
 
         case '2':
             /* THREAD */
-            mensaje = obtenerTarea();
-            selectDificultad(mensaje);
+            mensaje = obtenerTarea_t();
+            selectDificultad_t(mensaje);
             iniciarThread(mensaje); // TODO iniciar bien lo de threads
             printf("\n");
             break;
