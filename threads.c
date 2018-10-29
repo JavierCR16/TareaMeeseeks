@@ -47,11 +47,13 @@ char * obtenerTarea_t(){
 
 void actualizarBarraTrabajo_t(){
 
-    int primerDigito = Gdificultad_t / 10;
+    if(Gdificultad_t != 100) {
+        int primerDigito = Gdificultad_t / 10;
 
-    double aumentoBarraTrabajo = ((10-primerDigito) * 1.5);
+        double aumentoBarraTrabajo = ((10 - primerDigito) * 1.5);
 
-    largoBarraTrabajo_t= (int)aumentoBarraTrabajo * largoBarraTrabajo_t;
+        largoBarraTrabajo_t = (int) aumentoBarraTrabajo * largoBarraTrabajo_t;
+    }
 
 }
 
